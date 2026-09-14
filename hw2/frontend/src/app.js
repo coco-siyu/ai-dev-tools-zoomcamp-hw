@@ -1,5 +1,5 @@
 import { taskApi } from './api/index.js';
-import { STATUSES } from './api/mockApi.js';
+import { STATUSES } from './statuses.js';
 
 const statusNames = { todo: 'To Do', in_progress: 'In Progress', done: 'Done' };
 const listIds = { todo: 'todo-list', in_progress: 'in-progress-list', done: 'done-list' };
@@ -153,8 +153,9 @@ async function moveTask(id, status) {
   const task = tasks.find((item) => item.id === id);
   if (!task || task.status === status) return;
   try {
-    await taskApi.updateTask(id, { status });
-    await refresh();
+    const updated = await taskApi.updateTask(id, { status });
+    tasks = tasks.map((item) => item.id === id ? updated : item);
+    render();
     showNotice(`Moved “${task.title}” to ${statusNames[status]}.`);
   } catch (error) {
     render();
@@ -177,11 +178,13 @@ form.addEventListener('submit', async (event) => {
   saveButton.disabled = true;
   try {
     if (editingId) {
-      await taskApi.updateTask(editingId, input);
+      const updated = await taskApi.updateTask(editingId, input);
+      tasks = tasks.map((item) => item.id === editingId ? updated : item);
     } else {
-      await taskApi.createTask(input);
+      const created = await taskApi.createTask(input);
+      tasks = [created, ...tasks];
     }
-    await refresh();
+    render();
     dialog.close();
     showNotice(editingId ? 'Task updated.' : 'Task added.');
   } catch (error) {
@@ -206,7 +209,8 @@ document.querySelector('#confirm-delete').addEventListener('click', async (event
   button.disabled = true;
   try {
     await taskApi.deleteTask(editingId);
-    await refresh();
+    tasks = tasks.filter((task) => task.id !== editingId);
+    render();
     dialog.close();
     showNotice('Task deleted.');
   } catch (error) {

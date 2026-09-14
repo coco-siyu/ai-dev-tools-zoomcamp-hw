@@ -1,4 +1,4 @@
-import { createMockApi } from './mockApi.js';
+import { createHttpApi } from './httpApi.js';
 
-// The board imports only this module. Replace this adapter when the real API exists.
-export const taskApi = createMockApi();
+// Board components import only this adapter, which now calls FastAPI.
+export const taskApi = createHttpApi();

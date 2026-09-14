@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 
 from .models import Task, TaskCreate, TaskUpdate
 from .store import MemoryTaskRepository, TaskRepository
@@ -7,6 +8,12 @@ from .store import MemoryTaskRepository, TaskRepository
 def create_app(repository: TaskRepository | None = None) -> FastAPI:
     store = repository if repository is not None else MemoryTaskRepository()
     app = FastAPI(title="Pocket Flow API", version="0.1.0")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
+        allow_methods=["GET", "POST", "PATCH", "DELETE"],
+        allow_headers=["Content-Type"],
+    )
     app.state.task_repository = store
 
     @app.get("/api/tasks", response_model=list[Task], operation_id="listTasks")

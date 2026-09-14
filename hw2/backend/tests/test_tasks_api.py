@@ -125,3 +125,18 @@ def test_mock_repositories_are_isolated():
     second = TestClient(create_app(MemoryTaskRepository()))
     assert add_task(first).status_code == 201
     assert second.get("/api/tasks").json() == []
+
+
+@pytest.mark.parametrize("origin", ["http://127.0.0.1:5173", "http://localhost:5173"])
+def test_frontend_origin_can_preflight_json_updates(client, origin):
+    response = client.options(
+        "/api/tasks/11111111-1111-1111-1111-111111111111",
+        headers={
+            "Origin": origin,
+            "Access-Control-Request-Method": "PATCH",
+            "Access-Control-Request-Headers": "content-type",
+        },
+    )
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == origin
+    assert "PATCH" in response.headers["access-control-allow-methods"]

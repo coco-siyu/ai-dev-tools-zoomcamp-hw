@@ -1,5 +1,6 @@
+import { STATUSES } from '../statuses.js';
+
 const STORAGE_KEY = 'pocket-flow.tasks.v1';
-export const STATUSES = ['todo', 'in_progress', 'done'];
 
 function copy(task) {
   return { ...task };
