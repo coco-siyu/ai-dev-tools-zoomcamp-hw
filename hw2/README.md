@@ -2,28 +2,13 @@
 
 A personal Mini Kanban board. The [product specification](_docs/specs.md) defines the first version.
 
-## Frontend prototype
+## Run Pocket Flow
 
-The interactive frontend currently uses a mock API that stores tasks in your browser's local storage. It starts empty on a new browser profile. The frontend has not been connected to the FastAPI backend yet.
+The frontend sends task requests to the FastAPI backend. Start the backend first, then the frontend in a second terminal. The backend stores tasks in `backend/pocket_flow.sqlite3`, creating that file automatically. Tasks remain after the backend restarts. Tasks from the earlier in-memory backend or browser local-storage prototype are not migrated.
 
-You need Node.js 20 or newer. No package installation is required for this prototype.
+You need Node.js 20 or newer and `uv`.
 
 From the `hw2` folder:
-
-```sh
-cd frontend
-npm run dev
-```
-
-Open <http://127.0.0.1:5173>. Run the frontend tests with `npm test` from the same directory.
-
-The frontend calls only `src/api/index.js`; the mock implementation is in `src/api/mockApi.js`. The next stage will switch that adapter to the real HTTP API.
-
-## FastAPI backend with a mock store
-
-The backend follows [openapi.yaml](openapi.yaml). It holds tasks in memory, so backend data resets when the process stops. SQLite persistence comes in a later stage.
-
-From a second terminal in the `hw2` folder:
 
 ```sh
 cd backend
@@ -31,8 +16,25 @@ uv sync
 uv run uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-The API is at <http://127.0.0.1:8000/api/tasks>; FastAPI's interactive documentation is at <http://127.0.0.1:8000/docs>. Run endpoint tests from `backend/` with:
+In a second terminal, from `hw2`:
 
 ```sh
+cd frontend
+npm run dev
+```
+
+Open <http://127.0.0.1:5173>. The frontend calls <http://127.0.0.1:8000/api/tasks>; FastAPI's interactive documentation is at <http://127.0.0.1:8000/docs>. The API follows [openapi.yaml](openapi.yaml).
+
+To use another database URL, set `POCKET_FLOW_DATABASE_URL` before starting the backend. For example, `POCKET_FLOW_DATABASE_URL=sqlite:////tmp/pocket-flow.sqlite3 uv run uvicorn app.main:app --host 127.0.0.1 --port 8000`. The default SQLite file is ignored by Git.
+
+Run tests from each directory:
+
+```sh
+cd frontend
+npm test
+```
+
+```sh
+cd backend
 uv run pytest
 ```

@@ -4,5 +4,6 @@ dist/
 .env
 .venv/
 __pycache__/
+.pytest_cache/
 *.pyc
 *.sqlite3

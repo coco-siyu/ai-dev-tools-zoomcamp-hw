@@ -8,8 +8,9 @@ from app.store import MemoryTaskRepository
 
 
 @pytest.fixture
-def client():
-    return TestClient(create_app(MemoryTaskRepository()))
+def client(tmp_path, monkeypatch):
+    monkeypatch.setenv("POCKET_FLOW_DATABASE_URL", f"sqlite:///{tmp_path / 'tasks.sqlite3'}")
+    return TestClient(create_app())
 
 
 def add_task(client, title="Plan weekend hike", notes="Check the weather"):

@@ -1,12 +1,13 @@
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
+from .database import DatabaseTaskRepository, database_url
 from .models import Task, TaskCreate, TaskUpdate
-from .store import MemoryTaskRepository, TaskRepository
+from .store import TaskRepository
 
 
 def create_app(repository: TaskRepository | None = None) -> FastAPI:
-    store = repository if repository is not None else MemoryTaskRepository()
+    store = repository if repository is not None else DatabaseTaskRepository(database_url())
     app = FastAPI(title="Pocket Flow API", version="0.1.0")
     app.add_middleware(
         CORSMiddleware,
