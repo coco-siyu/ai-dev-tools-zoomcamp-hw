@@ -1,0 +1,151 @@
+openapi: 3.1.0
+info:
+  title: Pocket Flow API
+  version: 0.1.0
+  description: Contract for the single-user Pocket Flow task board.
+servers:
+  - url: http://127.0.0.1:8000
+paths:
+  /api/tasks:
+    get:
+      operationId: listTasks
+      summary: List tasks, newest first
+      responses:
+        '200':
+          description: All tasks on the board
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+    post:
+      operationId: createTask
+      summary: Add a task to To Do
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreate'
+      responses:
+        '201':
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /api/tasks/{task_id}:
+    parameters:
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Server-assigned task ID
+    patch:
+      operationId: updateTask
+      summary: Edit or move a task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpdate'
+      responses:
+        '200':
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      operationId: deleteTask
+      summary: Delete a task
+      responses:
+        '204':
+          description: Task deleted; no response body
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  schemas:
+    Status:
+      type: string
+      enum: [todo, in_progress, done]
+    Task:
+      type: object
+      additionalProperties: false
+      required: [id, title, notes, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 1
+          maxLength: 120
+        notes:
+          type: string
+          maxLength: 1000
+        status:
+          $ref: '#/components/schemas/Status'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    TaskCreate:
+      type: object
+      additionalProperties: false
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 120
+          description: Trimmed before validation; cannot be whitespace only.
+        notes:
+          type: string
+          maxLength: 1000
+          default: ''
+    TaskUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 120
+          description: Trimmed before validation; cannot be whitespace only.
+        notes:
+          type: string
+          maxLength: 1000
+        status:
+          $ref: '#/components/schemas/Status'
+    Error:
+      type: object
+      required: [detail]
+      properties:
+        detail:
+          description: Human-readable error or validation details.
+  responses:
+    NotFound:
+      description: Task ID not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ValidationError:
+      description: Request failed validation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
